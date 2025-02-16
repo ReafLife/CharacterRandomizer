@@ -268,7 +268,7 @@ namespace CharacterRandomizer
         }
 
         public IEnumerator DoReplaceCharacter(CharacterRandomizerPlugin.ChaFileInfo replacementChaInfo)
-        { 
+        {
             if (CharReplacementMode == ReplacementMode.SYNC_TO_SLOT)
             {
                 // wait a frame for the other slots to pick

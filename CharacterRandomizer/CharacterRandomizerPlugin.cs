@@ -40,6 +40,7 @@ namespace CharacterRandomizer
         // Config
         public static ConfigEntry<int> MinimumDelay { get; set; }
         public static ConfigEntry<KeyboardShortcut> ReplaceKey { get; set; }
+        public static ConfigEntry<KeyboardShortcut> ReplacePrevClothesKey { get; set; }
         public static ConfigEntry<string> DefaultSubdirectory { get; set; }        
         public static ConfigEntry<string> StickyCharacterAccessory { get; set; }
 
@@ -84,6 +85,7 @@ namespace CharacterRandomizer
             MinimumDelay = Config.Bind("Options", "Minimum Replacement Delay", 10, "Minimum Floor for Replacements, To Keep People from Soft-Locking, adjust at your peril.");
             DefaultSubdirectory = Config.Bind("Options", "Default Subdirectory", "", "Default subdirectory to pull replacement characters from. Default to blank (usual male/female card directory)");
             ReplaceKey = Config.Bind("Hotkeys", "Trigger Character Replacement", new KeyboardShortcut(KeyCode.None), new ConfigDescription("Triggers Character Replacement Manually Using Current Options."));
+            ReplacePrevClothesKey = Config.Bind("Hotkeys", "Trigger Character Replacement with prev clothes", new KeyboardShortcut(KeyCode.None), new ConfigDescription("Triggers Character Replacement with prev clothes."));
             StickyCharacterAccessory = Config.Bind("Options", "Always Sticky Character Accessories", "", "Pipe delimited list of character accessory names to make sticky across character replacement always.");
 
             var harmony = new Harmony(GUID);
@@ -98,13 +100,22 @@ namespace CharacterRandomizer
 
         public void Update()
         {
-            if (ReplaceKey.Value.IsUp())
+            if (ReplaceKey.Value.IsUp() || ReplacePrevClothesKey.Value.IsUp())
             {
                 foreach (OCIChar character in StudioAPI.GetSelectedCharacters())
                 {
                     CharacterRandomizerCharaController randomizer = character.GetChaControl().gameObject.GetComponent<CharacterRandomizerCharaController>();
                     if (randomizer != null)
                     {
+                        if(ReplacePrevClothesKey.Value.IsUp())
+                        {
+                            randomizer.PreserveOutfit = true;
+                        }
+                        else
+                        {
+                            randomizer.PreserveOutfit = false;
+                        }
+
                         randomizer.ReplaceCharacter();
                     }
                 }
@@ -120,7 +131,6 @@ namespace CharacterRandomizer
             }
 
             CheckForRequestedReplacementsViaFolder();
-
         }
 
         public void OnEnable()
